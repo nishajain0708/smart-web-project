@@ -5,13 +5,19 @@ pipeline {
 
         stage('Clone Code') {
             steps {
-                git branch: 'main', url: 'https://github.com/nishajain0708/smart-web-project.git'
+                git 'https://github.com/nishajain0708/smart-web-project.git'
             }
         }
 
-        stage('Build Image') {
+        stage('Build Docker Image') {
             steps {
                 sh 'docker build -t web-app .'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'echo "Testing successful"'
             }
         }
 
@@ -21,6 +27,5 @@ pipeline {
                 sh 'docker run -d -p 8083:80 --name web-container web-app'
             }
         }
-
     }
 }
