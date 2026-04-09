@@ -10,7 +10,11 @@ pipeline {
             }
         }
 
-       
+       stage('Test') {
+    steps {
+        sh 'echo "App is working fine"'
+    }
+}
 
         stage('Deploy') {
             steps {
