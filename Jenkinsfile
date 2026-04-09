@@ -5,7 +5,8 @@ pipeline {
 
         stage('Clone Code') {
             steps {
-                git 'https://github.com/nishajain0708/smart-web-project.git'
+                git branch: 'main', url: 'https://github.com/nishajain0708/smart-web-project.git'
+    }
             }
         }
 
