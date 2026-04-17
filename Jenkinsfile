@@ -3,11 +3,19 @@ pipeline {
 
     environment {
         IMAGE_NAME = "devops-html-app"
+        DOCKERHUB_IMAGE = "nishajain0708/devops-html-app"
         CONTAINER_NAME = "devops-html-container"
         PORT = "9090"
+        AWS_DEFAULT_REGION = "ap-south-1"
     }
 
     stages {
+
+        stage('Clone Code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/nishajain0708/devops-website.git'
+            }
+        }
 
         stage('Build Docker Image') {
             steps {
@@ -15,7 +23,27 @@ pipeline {
             }
         }
 
-        stage('Run Container') {
+        stage('Tag Image') {
+            steps {
+                sh 'docker tag $IMAGE_NAME $DOCKERHUB_IMAGE'
+            }
+        }
+
+        stage('Docker Login') {
+            steps {
+                withCredentials([string(credentialsId: 'docker-pass', variable: 'PASS')]) {
+                    sh 'docker login -u YOUR_DOCKERHUB_USERNAME -p $PASS'
+                }
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                sh 'docker push $DOCKERHUB_IMAGE'
+            }
+        }
+
+        stage('Run Local Container (Optional)') {
             steps {
                 sh '''
                 docker rm -f $CONTAINER_NAME || true
@@ -41,14 +69,23 @@ pipeline {
                 '''
             }
         }
+
+        stage('Get Public URL') {
+            steps {
+                script {
+                    def ip = sh(script: "cd terraform && terraform output -raw public_ip", returnStdout: true).trim()
+                    echo "🌐 LIVE APP URL: http://${ip}"
+                }
+            }
+        }
     }
 
     post {
         success {
-            echo "✅ Deployment Successful!"
+            echo "✅ Deployment Successful! CI/CD Pipeline Completed 🚀"
         }
         failure {
-            echo "❌ Pipeline Failed!"
+            echo "❌ Pipeline Failed! Check logs."
         }
     }
 }
